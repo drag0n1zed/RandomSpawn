@@ -1,6 +1,5 @@
 {
-
-  "info.randomspawn.system.success": "你已被随机传送，祝你好运！",
-  "info.randomspawn.system.failed": "没找到合适的位置，随机传送失败。"
-
+  "info.randomspawn.system.firstsuccess": "你已被传送至一个专属的随机出生点。祝你好运！",
+  "info.randomspawn.system.firstfail": "未能找到合适的随机出生点 - 将传送至世界出生点。",
+  "info.randomspawn.system.deathtpsuccess": "你已被传送回你的专属重生点。"
 }

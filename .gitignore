@@ -1,0 +1,44 @@
+# === Gradle / Build System ===
+.gradle/
+build/
+
+# Sometimes Gradle daemon logs are created in the root
+gradle-daemon-*.log
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# Visual Studio Code
+.vscode/
+
+
+# === Forge Development Environment ===
+run/
+src/generated/
+
+
+# === Logs & Archives ===
+*.log
+logs/
+*.jar
+*.zip
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini

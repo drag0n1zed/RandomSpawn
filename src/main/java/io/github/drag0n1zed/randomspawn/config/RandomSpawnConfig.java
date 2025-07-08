@@ -1,4 +1,4 @@
-package com.rinko1231.randomspawn.config;
+package io.github.drag0n1zed.randomspawn.config;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;

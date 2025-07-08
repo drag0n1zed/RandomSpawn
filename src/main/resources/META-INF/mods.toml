@@ -30,9 +30,9 @@ displayName="Random Spawn" #mandatory
 # A text field displayed in the mod UI
 #credits="Thanks for this example mod goes to Java" #optional
 # A text field displayed in the mod UI
-authors="rinko1231" #optional
+authors="drag0n1zed (original by rinko1231)" #optional
 # The description text for the mod (multi line!) (#mandatory)
-description='RTP the Player when first logging in'
+description='A simple mod that teleports new players to a random location and sets it as their spawn. Forked from rinko1231/RandomSpawn'
 
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.randomspawn]] #optional
