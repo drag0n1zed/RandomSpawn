@@ -1,4 +1,4 @@
-# Random Spawn Mod
+# dRandomSpawn
 
 This mod enhances player spawning in Minecraft.
 
@@ -11,7 +11,7 @@ This mod enhances player spawning in Minecraft.
 
 ## Configuration
 
-A `RandomSpawn.toml` file is generated in your `config` folder. You can set:
+A `dRandomSpawn.toml` file is generated in your `config` folder. You can set:
 *   `MaxDistance`
 *   `MaxTries`
 *   `biomeBlacklist` (list of biome IDs)

@@ -1,0 +1,5 @@
+{
+  "info.drandomspawn.system.firstsuccess": "你已被传送至一个专属的随机出生点。祝你好运！",
+  "info.drandomspawn.system.firstfail": "未能找到合适的随机出生点 - 将传送至世界出生点。",
+  "info.drandomspawn.system.deathtpsuccess": "你已被传送回你的专属重生点。"
+}

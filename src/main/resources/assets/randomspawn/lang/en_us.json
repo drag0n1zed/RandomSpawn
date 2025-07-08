@@ -1,5 +1,0 @@
-{
-  "info.randomspawn.system.firstsuccess": "You've been teleported to your own, unique spawn. Good luck!",
-  "info.randomspawn.system.firstfail": "Failed to find a proper random spawn - sending to world spawn.",
-  "info.randomspawn.system.deathtpsuccess": "You've been teleported to your own, unique rollback spawnpoint."
-}
