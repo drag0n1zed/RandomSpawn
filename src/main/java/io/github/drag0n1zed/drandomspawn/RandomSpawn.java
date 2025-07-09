@@ -23,9 +23,9 @@ import java.util.Random;
 @Mod("drandomspawn")
 public class RandomSpawn {
 
-    private static final String NBT_KEY_SPAWN_X = "drandomspawn:spawn_x";
-    private static final String NBT_KEY_SPAWN_Y = "drandomspawn:spawn_y";
-    private static final String NBT_KEY_SPAWN_Z = "drandomspawn:spawn_z";
+    public static final String NBT_KEY_SPAWN_X = "drandomspawn:spawn_x";
+    public static final String NBT_KEY_SPAWN_Y = "drandomspawn:spawn_y";
+    public static final String NBT_KEY_SPAWN_Z = "drandomspawn:spawn_z";
 
     public RandomSpawn() {
         ModConfig.setup();
