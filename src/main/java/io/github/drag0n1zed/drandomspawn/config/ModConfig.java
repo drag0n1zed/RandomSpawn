@@ -10,8 +10,8 @@ public class ModConfig
 {
     private static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static ForgeConfigSpec.IntValue MaxDistance;
-    public static ForgeConfigSpec.IntValue MaxTries;
+    public static ForgeConfigSpec.IntValue maxDistance;
+    public static ForgeConfigSpec.IntValue maxTries;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> biomeBlacklist;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> blockBlacklist;
     public static ForgeConfigSpec.BooleanValue useSpectatorLock;
@@ -20,14 +20,14 @@ public class ModConfig
     {
         BUILDER.push("Random Spawn Settings");
 
-        MaxDistance = BUILDER
+        maxDistance = BUILDER
                 .comment(
                         "The maximum radius, in blocks, from the world spawn that a new player can be randomly teleported.",
                         "This only applies to a player's very first join. Higher values may slightly increase search time."
                 )
                 .defineInRange("maxDistance", 500, 1, 30000);
 
-        MaxTries = BUILDER
+        maxTries = BUILDER
                 .comment(
                         "How many times the mod will try to find a safe location within the maxDistance.",
                         "If all attempts fail, the player will spawn at the default world spawn."

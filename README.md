@@ -19,8 +19,8 @@ A Minecraft mod enhancing player spawning with unique, persistent, and performan
 
 The `dRandomSpawn.toml` file, located in your `config` folder, allows for customization:
 
-*   `MaxDistance`: Maximum search radius for a new spawn location.
-*   `MaxTries`: Maximum attempts to find a safe location.
+*   `maxDistance`: Maximum search radius for a new spawn location.
+*   `maxTries`: Maximum attempts to find a safe location.
 *   `useSpectatorLock`: `true` to temporarily set players to spectator mode during search.
 *   `biomeBlacklist`: List of biome IDs to avoid.
 *   `blockBlacklist`: List of block IDs to avoid spawning on.
