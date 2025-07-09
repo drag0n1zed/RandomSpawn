@@ -2,12 +2,11 @@ package io.github.drag0n1zed.drandomspawn.config;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
 
 import java.util.List;
 
 
-public class RandomSpawnConfig
+public class ModConfig
 {
     private static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
@@ -37,7 +36,7 @@ public class RandomSpawnConfig
     }
     public static void setup()
     {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SPEC, "dRandomSpawn.toml");
+        ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON, SPEC, "dRandomSpawn.toml");
     }
 
 }

@@ -1,6 +1,6 @@
 package io.github.drag0n1zed.drandomspawn;
 
-import io.github.drag0n1zed.drandomspawn.config.RandomSpawnConfig;
+import io.github.drag0n1zed.drandomspawn.config.ModConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -29,7 +29,7 @@ public class RandomSpawn {
 
     // Mod constructor. Registers config and event listeners.
     public RandomSpawn() {
-        RandomSpawnConfig.setup();
+        ModConfig.setup();
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -39,8 +39,8 @@ public class RandomSpawn {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
 
-        int RANGE = RandomSpawnConfig.MaxDistance.get();
-        int MAX_ATTEMPTS = RandomSpawnConfig.MaxTries.get();
+        int RANGE = ModConfig.MaxDistance.get();
+        int MAX_ATTEMPTS = ModConfig.MaxTries.get();
 
         if (event.getEntity() instanceof ServerPlayer player) {
             Level world = player.level();
@@ -132,11 +132,11 @@ public class RandomSpawn {
                 && playerFeetPos.getY() > 63
                 && !world.getBiome(groundPos).is(BiomeTags.IS_OCEAN)
                 && !world.getBiome(groundPos).is(BiomeTags.IS_RIVER)
-                && !RandomSpawnConfig.biomeBlacklist.get().contains(biomeId))
+                && !ModConfig.biomeBlacklist.get().contains(biomeId))
         {
             Block groundBlock = world.getBlockState(groundPos).getBlock();
             String groundBlockId = ForgeRegistries.BLOCKS.getKey(groundBlock).toString();
-            boolean isSafeGround = !RandomSpawnConfig.blockBlacklist.get().contains(groundBlockId);
+            boolean isSafeGround = !ModConfig.blockBlacklist.get().contains(groundBlockId);
 
             // Ensure ground is solid and there are 2 blocks of air for the player.
             if (!world.getBlockState(groundPos).isAir() && isSafeGround
