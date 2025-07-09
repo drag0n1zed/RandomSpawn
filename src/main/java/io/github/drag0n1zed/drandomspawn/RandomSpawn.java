@@ -96,7 +96,7 @@ public class RandomSpawn {
     @SubscribeEvent
     public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            if (!player.isRespawnForced()) {
+            if (player.getRespawnPosition() == null) {
                 CompoundTag data = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
                 if (data.contains(NBT_KEY_SPAWN_X)) {
                     double x = data.getInt(NBT_KEY_SPAWN_X) + 0.5;
