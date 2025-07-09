@@ -8,5 +8,9 @@
 
   "info.drandomspawn.rtp.start": "[dRandomSpawn] 正在寻找一个安全的随机地点...",
   "info.drandomspawn.rtp.success": "[dRandomSpawn] 已传送至一个新的随机地点！新地点已保存。",
-  "info.drandomspawn.rtp.fail": "[dRandomSpawn] 未能找到一个安全的随机传送地点。"
+  "info.drandomspawn.rtp.fail": "[dRandomSpawn] 未能找到一个安全的随机传送地点。",
+
+  "info.drandomspawn.rtp.start.for": "[dRandomSpawn] 正在为 %s 寻找一个安全的随机地点...",
+  "info.drandomspawn.rtp.success.for": "[dRandomSpawn] 已将 %s 传送至一个新的随机地点！新地点已保存。",
+  "info.drandomspawn.rtp.fail.for": "[dRandomSpawn] 未能找到一个安全的随机传送地点来传送 %s。"
 }

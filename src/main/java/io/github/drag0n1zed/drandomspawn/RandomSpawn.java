@@ -198,8 +198,8 @@ public class RandomSpawn {
 
 
         new Thread(() -> {
-            int RANGE = ModConfig.MaxDistance.get();
-            int MAX_ATTEMPTS = ModConfig.MaxTries.get();
+            int RANGE = ModConfig.maxDistance.get();
+            int MAX_ATTEMPTS = ModConfig.maxTries.get();
             Level world = player.level();
             // Use player's current respawn position (if set) or world's shared spawn as the center for the search.
             BlockPos centerPos = player.getRespawnPosition() != null ? player.getRespawnPosition() : world.getSharedSpawnPos();

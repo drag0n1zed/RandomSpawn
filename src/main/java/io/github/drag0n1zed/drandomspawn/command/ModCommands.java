@@ -23,8 +23,12 @@ public class ModCommands {
                 .then(
                         // /drandomspawn rtp
                         Commands.literal("rtp")
-                                .requires(source -> source.hasPermission(2)) // Requires OP
-                                .executes(ModCommands::executeRtp)
+                                .requires(source -> source.hasPermission(2)) // Requires OP for all /rtp commands
+                                .executes(ModCommands::executeRtpSelf)
+                                .then(
+                                        Commands.argument("target", EntityArgument.player())
+                                                .executes(ModCommands::executeRtpOther)
+                                )
                 )
                 .then(
                         // /drandomspawn getSpawn
@@ -40,30 +44,38 @@ public class ModCommands {
         );
     }
 
+    private static int executeRtpSelf(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        final ServerPlayer player = context.getSource().getPlayerOrException();
+        return rtpPlayer(context, player);
+    }
+
+    private static int executeRtpOther(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        final ServerPlayer player = EntityArgument.getPlayer(context, "target");
+        return rtpPlayer(context, player);
+    }
+
     /**
-     * Executes the /rtp command.
+     * Helper method to execute the rtp logic for a given player.
      * This method now uses the asynchronous search and provides callbacks for success or failure.
      */
-    private static int executeRtp(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        final ServerPlayer player = context.getSource().getPlayerOrException();
+    private static int rtpPlayer(CommandContext<CommandSourceStack> context, ServerPlayer player) {
         final CommandSourceStack source = context.getSource();
 
         // Give the user immediate feedback that the search has started.
-        source.sendSuccess(() -> Component.translatable("info.drandomspawn.rtp.start"), false);
+        source.sendSuccess(() -> Component.translatable("info.drandomspawn.rtp.start.for", player.getDisplayName()), false);
 
         // Define what happens on a successful search.
         // This will be executed on the main server thread later.
         Consumer<BlockPos> onSuccess = (foundPos) -> {
-
             // Teleport the player, save their new spawn, and send a success message.
             player.teleportTo(foundPos.getX() + 0.5, foundPos.getY(), foundPos.getZ() + 0.5);
             RandomSpawn.savePlayerSpawn(player, foundPos);
-            source.sendSuccess(() -> Component.translatable("info.drandomspawn.rtp.success"), true);
+            source.sendSuccess(() -> Component.translatable("info.drandomspawn.rtp.success.for", player.getDisplayName()), true);
         };
 
         // Define what happens on a failed search.
         Runnable onFail = () -> {
-            source.sendFailure(Component.translatable("info.drandomspawn.rtp.fail"));
+            source.sendFailure(Component.translatable("info.drandomspawn.rtp.fail.for", player.getDisplayName()));
         };
 
         // Start the asynchronous search. This method returns immediately.
