@@ -17,21 +17,41 @@ public class ModConfig
 
     static
     {
-        BUILDER.push("Random Spawn Config");
+        BUILDER.push("Random Spawn Settings");
+
         MaxDistance = BUILDER
-                .comment("Max RTP Distance")
-                .defineInRange("MaxDistance", 500, 1, 10000);
+                .comment(
+                        "The maximum radius, in blocks, from the world spawn that a new player can be randomly teleported.",
+                        "This only applies to a player's very first join. Higher values may slightly increase search time."
+                )
+                .defineInRange("maxDistance", 500, 1, 30000);
+
         MaxTries = BUILDER
-                .comment("Max RTP Tries")
-                .defineInRange("MaxTries", 5, 1, 20);
+                .comment(
+                        "How many times the mod will try to find a safe location within the maxDistance.",
+                        "If all attempts fail, the player will spawn at the default world spawn."
+                )
+                .defineInRange("maxTries", 10, 1, 50);
+
         biomeBlacklist = BUILDER
-                .comment("Biome Blacklist")
-                .defineList("biome Blacklist", List.of("mod1:biome2","mod3:biome4"),
+                .comment(
+                        "A list of biomes where new players are not allowed to spawn.",
+                        "Entries must be valid biome resource locations, e.g., 'minecraft:ocean' or 'biomesoplenty:wasteland'."
+                )
+                .defineList("biomeBlacklist", List.of(), // Using an empty list is cleaner than placeholder examples
                         element -> element instanceof String);
+
         blockBlacklist = BUILDER
-                .comment("Block Blacklist")
-                .defineList("block Blacklist", List.of("minecraft:magma_block","minecraft:cactus","minecraft:lava"),
+                .comment(
+                        "A list of blocks that players cannot spawn directly on top of.",
+                        "This is useful for preventing spawns on dangerous blocks. The defaults are highly recommended.",
+                        "Entries must be valid block resource locations, e.g., 'minecraft:lava'."
+                )
+                .defineList("blockBlacklist",
+                        List.of("minecraft:magma_block", "minecraft:cactus", "minecraft:lava", "minecraft:sweet_berry_bush"),
                         element -> element instanceof String);
+
+        BUILDER.pop();
         SPEC = BUILDER.build();
     }
     public static void setup()
