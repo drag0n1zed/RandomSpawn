@@ -11,7 +11,7 @@ A Minecraft mod enhancing player spawning with unique, persistent, and performan
     *   **Search Radius:** Define the maximum distance for random teleportation.
     *   **Biome Blacklist:** Exclude specific biomes from potential spawn locations.
     *   **Block Blacklist:** Prevent spawning on undesirable or hazardous blocks.
-*   **Enhanced Commands:**
+*   **Commands:**
     *   `/drandomspawn random_teleport [player]`: Initiates an asynchronous random teleport. This command always requires operator (OP) permissions. If `[player]` is specified, teleports that player; otherwise, teleports the command sender.
     *   `/drandomspawn get_spawn [player]`: Allows players to view their own saved spawn point. If `[player]` is specified, it allows administrators to check another player's saved spawn and requires operator (OP) permissions.
 
