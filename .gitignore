@@ -31,6 +31,7 @@ src/generated/
 *.log
 logs/
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.zip
 
 # macOS
