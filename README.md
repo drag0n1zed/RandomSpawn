@@ -17,7 +17,7 @@ A Minecraft mod enhancing player spawning with unique, persistent, and performan
 
 ## Configuration
 
-The `drandomspawn.toml` file, located in your `config` folder, allows for customization:
+The `dRandomSpawn.toml` file, located in your `config` folder, allows for customization:
 
 *   `MaxDistance`: Maximum search radius for a new spawn location.
 *   `MaxTries`: Maximum attempts to find a safe location.
