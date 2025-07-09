@@ -19,7 +19,8 @@ jobs:
       - name: build
         run: ./gradlew build
       - name: upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-libs
           path: build/libs/
+          if-no-files-found: error
