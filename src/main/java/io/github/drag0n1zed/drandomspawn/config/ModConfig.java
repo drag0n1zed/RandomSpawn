@@ -14,6 +14,7 @@ public class ModConfig
     public static ForgeConfigSpec.IntValue MaxTries;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> biomeBlacklist;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> blockBlacklist;
+    public static ForgeConfigSpec.BooleanValue useSpectatorLock;
 
     static
     {
@@ -51,6 +52,12 @@ public class ModConfig
                         List.of("minecraft:magma_block", "minecraft:cactus", "minecraft:lava", "minecraft:sweet_berry_bush"),
                         element -> element instanceof String);
 
+        useSpectatorLock = BUILDER
+                .comment(
+                        "If true, puts a player into spectator mode on first join while finding a safe spawn.",
+                        "This prevents them from moving and hides world loading, providing a smoother experience."
+                )
+                .define("useSpectatorLock", true);
         BUILDER.pop();
         SPEC = BUILDER.build();
     }

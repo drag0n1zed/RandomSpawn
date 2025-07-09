@@ -1,7 +1,12 @@
 {
-  "info.drandomspawn.system.firstsuccess": "[dRandomSpawn] 你已被传送至一个专属的随机出生点. 祝你好运!",
-  "info.drandomspawn.system.firstfail": "[dRandomSpawn] 未能找到合适的随机出生点 - 将传送至世界出生点.",
-  "info.drandomspawn.system.deathtpsuccess": "[dRandomSpawn] 你已被传送回你的专属重生点.",
-  "info.drandomspawn.getspawn.success": "[dRandomSpawn] %s的专属重生点在: %s, %s, %s",
-  "info.drandomspawn.getspawn.fail": "[dRandomSpawn] 未能找到%s的专属重生点."
+  "info.drandomspawn.join.success": "[dRandomSpawn] 您已被传送至您的专属随机出生点。祝您好运！",
+  "info.drandomspawn.join.fail": "[dRandomSpawn] 未能找到一个安全的随机传送地点。",
+  "info.drandomspawn.death.success": "[dRandomSpawn] 正在您的专属随机出生点重生。",
+
+  "info.drandomspawn.getspawn.success": "[dRandomSpawn] %s 保存的出生点位于：X: %s, Y: %s, Z: %s",
+  "info.drandomspawn.getspawn.fail": "[dRandomSpawn] %s 没有保存的随机出生点。",
+
+  "info.drandomspawn.rtp.start": "[dRandomSpawn] 正在寻找一个安全的随机地点...",
+  "info.drandomspawn.rtp.success": "[dRandomSpawn] 已传送至一个新的随机地点！新地点已保存。",
+  "info.drandomspawn.rtp.fail": "[dRandomSpawn] 未能找到一个安全的随机传送地点。"
 }

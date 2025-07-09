@@ -1,7 +1,12 @@
 {
-  "info.drandomspawn.system.firstsuccess": "[dRandomSpawn] You've been teleported to your own, unique spawn. Good luck!",
-  "info.drandomspawn.system.firstfail": "[dRandomSpawn] Failed to find a proper random spawn - sending to world spawn.",
-  "info.drandomspawn.system.deathtpsuccess": "[dRandomSpawn] You've been teleported!.",
-  "info.drandomspawn.getspawn.success": "[dRandomSpawn] %s's saved spawn point is at: %s, %s, %s",
-  "info.drandomspawn.getspawn.fail": "[dRandomSpawn] No saved spawn point found for %s."
+  "info.drandomspawn.join.success": "[dRandomSpawn] You've been teleported to your own, unique spawn. Good luck!",
+  "info.drandomspawn.join.fail": "[dRandomSpawn] Failed to find a safe random location to teleport to.",
+  "info.drandomspawn.death.success": "[dRandomSpawn] Respawning at your unique random spawn.",
+
+  "info.drandomspawn.getspawn.success": "[dRandomSpawn] %s's saved spawn point is at: X: %s, Y: %s, Z: %s",
+  "info.drandomspawn.getspawn.fail": "[dRandomSpawn] %s does not have a random spawn point saved.",
+
+  "info.drandomspawn.rtp.start": "[dRandomSpawn] Searching for a safe random location...",
+  "info.drandomspawn.rtp.success": "[dRandomSpawn] Teleported to a new random location! New location is saved.",
+  "info.drandomspawn.rtp.fail": "[dRandomSpawn] Failed to find a safe random location to teleport to."
 }
