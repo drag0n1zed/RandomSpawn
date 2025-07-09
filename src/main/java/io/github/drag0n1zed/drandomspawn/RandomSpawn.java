@@ -1,5 +1,6 @@
 package io.github.drag0n1zed.drandomspawn;
 
+import io.github.drag0n1zed.drandomspawn.command.ModCommands;
 import io.github.drag0n1zed.drandomspawn.config.ModConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -11,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -18,89 +20,88 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import java.util.Random;
 
-
 @Mod("drandomspawn")
 public class RandomSpawn {
 
-    // NBT keys for the player's saved spawn point.
     private static final String NBT_KEY_SPAWN_X = "drandomspawn:spawn_x";
     private static final String NBT_KEY_SPAWN_Y = "drandomspawn:spawn_y";
     private static final String NBT_KEY_SPAWN_Z = "drandomspawn:spawn_z";
 
-    // Mod constructor. Registers config and event listeners.
     public RandomSpawn() {
         ModConfig.setup();
         MinecraftForge.EVENT_BUS.register(this);
+        // Register the command event listener
+        MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
     }
 
-    /**
-     * On a player's first join, finds and teleports them to a random safe location.
-     */
+    public void registerCommands(RegisterCommandsEvent event) {
+        ModCommands.register(event.getDispatcher());
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-
-        int RANGE = ModConfig.MaxDistance.get();
-        int MAX_ATTEMPTS = ModConfig.MaxTries.get();
-
         if (event.getEntity() instanceof ServerPlayer player) {
-            Level world = player.level();
-
             CompoundTag playerData = player.getPersistentData();
-            // CORRECTED: This is the standard, reliable way to get or create the sub-tag.
-            CompoundTag data;
-            if (playerData.contains(Player.PERSISTED_NBT_TAG)) {
-                data = playerData.getCompound(Player.PERSISTED_NBT_TAG);
-            } else {
-                data = new CompoundTag();
-                playerData.put(Player.PERSISTED_NBT_TAG, data);
-            }
+            CompoundTag data = playerData.contains(Player.PERSISTED_NBT_TAG) ?
+                    playerData.getCompound(Player.PERSISTED_NBT_TAG) : new CompoundTag();
 
-            // Only run if the player has no saved spawn point from this mod.
             if (!data.contains(NBT_KEY_SPAWN_X)) {
-
-                BlockPos centerPos = player.getRespawnPosition();
-                if (centerPos == null) {
-                    centerPos = world.getSharedSpawnPos();
+                // Call our new reusable method
+                boolean success = teleportPlayerToRandomLocation(player);
+                if (success) {
+                    player.sendSystemMessage(Component.translatable("info.drandomspawn.system.firstsuccess"));
+                } else {
+                    player.sendSystemMessage(Component.translatable("info.drandomspawn.system.firstfail"));
                 }
-
-                Random random = new Random();
-                for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-                    int x = centerPos.getX() + random.nextInt(RANGE * 2) - RANGE;
-                    int z = centerPos.getZ() + random.nextInt(RANGE * 2) - RANGE;
-                    BlockPos teleportPos = getSafePosition(world, x, z);
-
-                    if (teleportPos != null) {
-                        player.teleportTo(teleportPos.getX() + 0.5, teleportPos.getY(), teleportPos.getZ() + 0.5);
-                        player.sendSystemMessage(Component.translatable("info.drandomspawn.system.firstsuccess"));
-
-                        // Save the new spawn coordinates to the player's data.
-                        data.putInt(NBT_KEY_SPAWN_X, teleportPos.getX());
-                        data.putInt(NBT_KEY_SPAWN_Y, teleportPos.getY());
-                        data.putInt(NBT_KEY_SPAWN_Z, teleportPos.getZ());
-                        return;
-                    }
-                }
-                player.sendSystemMessage(Component.translatable("info.drandomspawn.system.firstfail"));
             }
         }
     }
 
-    /**
-     * Overrides the respawn location for players without a bed spawn.
-     */
+    public static boolean teleportPlayerToRandomLocation(ServerPlayer player) {
+        int RANGE = ModConfig.MaxDistance.get();
+        int MAX_ATTEMPTS = ModConfig.MaxTries.get();
+        Level world = player.level();
+
+        BlockPos centerPos = player.getRespawnPosition();
+        if (centerPos == null) {
+            centerPos = world.getSharedSpawnPos();
+        }
+
+        Random random = new Random();
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            int x = centerPos.getX() + random.nextInt(RANGE * 2) - RANGE;
+            int z = centerPos.getZ() + random.nextInt(RANGE * 2) - RANGE;
+            BlockPos teleportPos = getSafePosition(world, x, z);
+
+            if (teleportPos != null) {
+                player.teleportTo(teleportPos.getX() + 0.5, teleportPos.getY(), teleportPos.getZ() + 0.5);
+
+                // Save the new spawn coordinates to the player's data.
+                CompoundTag playerData = player.getPersistentData();
+                CompoundTag data = playerData.contains(Player.PERSISTED_NBT_TAG) ?
+                        playerData.getCompound(Player.PERSISTED_NBT_TAG) : new CompoundTag();
+                data.putInt(NBT_KEY_SPAWN_X, teleportPos.getX());
+                data.putInt(NBT_KEY_SPAWN_Y, teleportPos.getY());
+                data.putInt(NBT_KEY_SPAWN_Z, teleportPos.getZ());
+                // Make sure to put the sub-tag back if it was new
+                if (!playerData.contains(Player.PERSISTED_NBT_TAG)) {
+                    playerData.put(Player.PERSISTED_NBT_TAG, data);
+                }
+                return true; // Indicate success
+            }
+        }
+        return false; // Indicate failure
+    }
+
     @SubscribeEvent
     public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            // Only run if the player has no bed/respawn anchor.
             if (!player.isRespawnForced()) {
                 CompoundTag data = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-
-                // Check if a random spawn point has been saved.
                 if (data.contains(NBT_KEY_SPAWN_X)) {
                     double x = data.getInt(NBT_KEY_SPAWN_X) + 0.5;
                     double y = data.getInt(NBT_KEY_SPAWN_Y);
                     double z = data.getInt(NBT_KEY_SPAWN_Z) + 0.5;
-
                     player.teleportTo(x, y, z);
                     player.sendSystemMessage(Component.translatable("info.drandomspawn.system.deathtpsuccess"));
                 }
@@ -108,26 +109,14 @@ public class RandomSpawn {
         }
     }
 
-    /**
-     * Finds a safe surface position at the given X and Z coordinates.
-     */
     private static BlockPos getSafePosition(Level world, int x, int z) {
         BlockPos.MutableBlockPos testPos = new BlockPos.MutableBlockPos(x, 0, z);
-
-        // Pre-load the chunk to prevent issues.
         world.getChunkAt(testPos);
-
-        // Find the highest solid block, ignoring leaves.
         BlockPos hmPos = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, testPos);
-
         BlockPos groundPos = hmPos.below();
         BlockPos playerFeetPos = hmPos;
         BlockPos playerHeadPos = hmPos.above();
-
-        // Get the biome's registry name for a reliable check.
         String biomeId = world.getBiome(groundPos).unwrapKey().map(key -> key.location().toString()).orElse("");
-
-        // Check for world border, valid biome, Y>63, and safe ground.
         if (world.getWorldBorder().isWithinBounds(groundPos)
                 && playerFeetPos.getY() > 63
                 && !world.getBiome(groundPos).is(BiomeTags.IS_OCEAN)
@@ -137,8 +126,6 @@ public class RandomSpawn {
             Block groundBlock = world.getBlockState(groundPos).getBlock();
             String groundBlockId = ForgeRegistries.BLOCKS.getKey(groundBlock).toString();
             boolean isSafeGround = !ModConfig.blockBlacklist.get().contains(groundBlockId);
-
-            // Ensure ground is solid and there are 2 blocks of air for the player.
             if (!world.getBlockState(groundPos).isAir() && isSafeGround
                     && world.getBlockState(playerFeetPos).isAir()
                     && world.getBlockState(playerHeadPos).isAir())
@@ -146,7 +133,6 @@ public class RandomSpawn {
                 return playerFeetPos;
             }
         }
-        // No safe position found.
         return null;
     }
 }
