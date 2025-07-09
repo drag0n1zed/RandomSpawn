@@ -3,14 +3,14 @@
   "info.drandomspawn.join.fail": "[dRandomSpawn] Failed to find a safe random location to teleport to.",
   "info.drandomspawn.death.success": "[dRandomSpawn] Respawning at your unique random spawn.",
 
-  "info.drandomspawn.getspawn.success": "[dRandomSpawn] %s's saved spawn point is at: X: %s, Y: %s, Z: %s",
-  "info.drandomspawn.getspawn.fail": "[dRandomSpawn] %s does not have a random spawn point saved.",
+  "info.drandomspawn.get_spawn.success": "[dRandomSpawn] %s's saved spawn point is at: X: %s, Y: %s, Z: %s",
+  "info.drandomspawn.get_spawn.fail": "[dRandomSpawn] %s does not have a random spawn point saved.",
 
-  "info.drandomspawn.rtp.start": "[dRandomSpawn] Searching for a safe random location...",
-  "info.drandomspawn.rtp.success": "[dRandomSpawn] Teleported to a new random location! New location is saved.",
-  "info.drandomspawn.rtp.fail": "[dRandomSpawn] Failed to find a safe random location to teleport to.",
+  "info.drandomspawn.random_teleport.start": "[dRandomSpawn] Searching for a safe random location...",
+  "info.drandomspawn.random_teleport.success": "[dRandomSpawn] Teleported to a new random location! New location is saved.",
+  "info.drandomspawn.random_teleport.fail": "[dRandomSpawn] Failed to find a safe random location to teleport to.",
 
-  "info.drandomspawn.rtp.start.for": "[dRandomSpawn] Searching for a safe random location for %s...",
-  "info.drandomspawn.rtp.success.for": "[dRandomSpawn] Teleported %s to a new random location! New location is saved.",
-  "info.drandomspawn.rtp.fail.for": "[dRandomSpawn] Failed to find a safe random location to teleport %s to."
+  "info.drandomspawn.random_teleport.start.for": "[dRandomSpawn] Searching for a safe random location for %s...",
+  "info.drandomspawn.random_teleport.success.for": "[dRandomSpawn] Teleported %s to a new random location! New location is saved.",
+  "info.drandomspawn.random_teleport.fail.for": "[dRandomSpawn] Failed to find a safe random location to teleport %s to."
 }

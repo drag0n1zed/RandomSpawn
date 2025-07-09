@@ -3,14 +3,14 @@
   "info.drandomspawn.join.fail": "[dRandomSpawn] 未能找到一个安全的随机传送地点。",
   "info.drandomspawn.death.success": "[dRandomSpawn] 正在您的专属随机出生点重生。",
 
-  "info.drandomspawn.getspawn.success": "[dRandomSpawn] %s 保存的出生点位于：X: %s, Y: %s, Z: %s",
-  "info.drandomspawn.getspawn.fail": "[dRandomSpawn] %s 没有保存的随机出生点。",
+  "info.drandomspawn.get_spawn.success": "[dRandomSpawn] %s 保存的出生点位于：X: %s, Y: %s, Z: %s",
+  "info.drandomspawn.get_spawn.fail": "[dRandomSpawn] %s 没有保存的随机出生点。",
 
-  "info.drandomspawn.rtp.start": "[dRandomSpawn] 正在寻找一个安全的随机地点...",
-  "info.drandomspawn.rtp.success": "[dRandomSpawn] 已传送至一个新的随机地点！新地点已保存。",
-  "info.drandomspawn.rtp.fail": "[dRandomSpawn] 未能找到一个安全的随机传送地点。",
+  "info.drandomspawn.random_teleport.start": "[dRandomSpawn] 正在寻找一个安全的随机地点...",
+  "info.drandomspawn.random_teleport.success": "[dRandomSpawn] 已传送至一个新的随机地点！新地点已保存。",
+  "info.drandomspawn.random_teleport.fail": "[dRandomSpawn] 未能找到一个安全的随机传送地点。",
 
-  "info.drandomspawn.rtp.start.for": "[dRandomSpawn] 正在为 %s 寻找一个安全的随机地点...",
-  "info.drandomspawn.rtp.success.for": "[dRandomSpawn] 已将 %s 传送至一个新的随机地点！新地点已保存。",
-  "info.drandomspawn.rtp.fail.for": "[dRandomSpawn] 未能找到一个安全的随机传送地点来传送 %s。"
+  "info.drandomspawn.random_teleport.start.for": "[dRandomSpawn] 正在为 %s 寻找一个安全的随机地点...",
+  "info.drandomspawn.random_teleport.success.for": "[dRandomSpawn] 已将 %s 传送至一个新的随机地点！新地点已保存。",
+  "info.drandomspawn.random_teleport.fail.for": "[dRandomSpawn] 未能找到一个安全的随机传送地点来传送 %s。"
 }

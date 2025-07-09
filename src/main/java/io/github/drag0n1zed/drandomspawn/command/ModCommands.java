@@ -18,86 +18,74 @@ import java.util.function.Consumer;
 public class ModCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        // Main command literal
         dispatcher.register(Commands.literal("drandomspawn")
                 .then(
-                        // /drandomspawn rtp
-                        Commands.literal("rtp")
-                                .requires(source -> source.hasPermission(2)) // Requires OP for all /rtp commands
-                                .executes(ModCommands::executeRtpSelf)
+                        Commands.literal("random_teleport")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ModCommands::executeRandomTeleportForSelf)
                                 .then(
                                         Commands.argument("target", EntityArgument.player())
-                                                .executes(ModCommands::executeRtpOther)
+                                                .executes(ModCommands::executeRandomTeleportForOther)
                                 )
                 )
                 .then(
-                        // /drandomspawn getSpawn
-                        Commands.literal("getSpawn")
-                                .executes(ModCommands::executeGetSpawnSelf) // get own spawnpoint (does not require OP)
+                        Commands.literal("get_spawn")
+                                .executes(ModCommands::executeGetSpawnForSelf)
                                 .then(
-                                        // get others spawnpoint (requires OP)
                                         Commands.argument("target", EntityArgument.player())
                                                 .requires(source -> source.hasPermission(2))
-                                                .executes(ModCommands::executeGetSpawnOther)
+                                                .executes(ModCommands::executeGetSpawnForOther)
                                 )
                 )
         );
     }
 
-    private static int executeRtpSelf(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int executeRandomTeleportForSelf(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         final ServerPlayer player = context.getSource().getPlayerOrException();
-        return rtpPlayer(context, player);
+        return performRandomTeleport(context, player);
     }
 
-    private static int executeRtpOther(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int executeRandomTeleportForOther(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         final ServerPlayer player = EntityArgument.getPlayer(context, "target");
-        return rtpPlayer(context, player);
+        return performRandomTeleport(context, player);
     }
 
     /**
-     * Helper method to execute the rtp logic for a given player.
-     * This method now uses the asynchronous search and provides callbacks for success or failure.
+     * Executes the random teleport logic for a given player.
+     * This method uses the asynchronous search and provides callbacks for success or failure.
      */
-    private static int rtpPlayer(CommandContext<CommandSourceStack> context, ServerPlayer player) {
+    private static int performRandomTeleport(CommandContext<CommandSourceStack> context, ServerPlayer player) {
         final CommandSourceStack source = context.getSource();
 
-        // Give the user immediate feedback that the search has started.
-        source.sendSuccess(() -> Component.translatable("info.drandomspawn.rtp.start.for", player.getDisplayName()), false);
+        source.sendSuccess(() -> Component.translatable("info.drandomspawn.random_teleport.start.for", player.getDisplayName()), false);
 
-        // Define what happens on a successful search.
-        // This will be executed on the main server thread later.
         Consumer<BlockPos> onSuccess = (foundPos) -> {
-            // Teleport the player, save their new spawn, and send a success message.
             player.teleportTo(foundPos.getX() + 0.5, foundPos.getY(), foundPos.getZ() + 0.5);
             RandomSpawn.savePlayerSpawn(player, foundPos);
-            source.sendSuccess(() -> Component.translatable("info.drandomspawn.rtp.success.for", player.getDisplayName()), true);
+            source.sendSuccess(() -> Component.translatable("info.drandomspawn.random_teleport.success.for", player.getDisplayName()), true);
         };
 
-        // Define what happens on a failed search.
         Runnable onFail = () -> {
-            source.sendFailure(Component.translatable("info.drandomspawn.rtp.fail.for", player.getDisplayName()));
+            source.sendFailure(Component.translatable("info.drandomspawn.random_teleport.fail.for", player.getDisplayName()));
         };
 
-        // Start the asynchronous search. This method returns immediately.
-        RandomSpawn.findAndTeleportPlayerAsync(player, onSuccess, onFail);
+        RandomSpawn.findSafeSpawnAndTeleportAsync(player, onSuccess, onFail);
 
-        // The command itself successfully started the process, so we return 1.
-        // The final success/fail message is handled by the callbacks.
         return 1;
     }
 
-    private static int executeGetSpawnSelf(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int executeGetSpawnForSelf(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        return getAndSendSpawnPoint(context, player);
+        return displayPlayerSpawnPoint(context, player);
     }
 
-    private static int executeGetSpawnOther(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int executeGetSpawnForOther(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = EntityArgument.getPlayer(context, "target");
-        return getAndSendSpawnPoint(context, player);
+        return displayPlayerSpawnPoint(context, player);
     }
 
-    // This helper method is unchanged as it only reads data.
-    private static int getAndSendSpawnPoint(CommandContext<CommandSourceStack> context, ServerPlayer player) {
+    /** Displays a player's saved spawn point. */
+    private static int displayPlayerSpawnPoint(CommandContext<CommandSourceStack> context, ServerPlayer player) {
         CommandSourceStack source = context.getSource();
         CompoundTag data = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         if (data.contains(RandomSpawn.NBT_KEY_SPAWN_X)) {
@@ -105,12 +93,12 @@ public class ModCommands {
             int y = data.getInt(RandomSpawn.NBT_KEY_SPAWN_Y);
             int z = data.getInt(RandomSpawn.NBT_KEY_SPAWN_Z);
 
-            Component message = Component.translatable("info.drandomspawn.getspawn.success", player.getDisplayName(), x, y, z);
+            Component message = Component.translatable("info.drandomspawn.get_spawn.success", player.getDisplayName(), x, y, z);
             source.sendSuccess(() -> message, false);
         } else {
-            Component message = Component.translatable("info.drandomspawn.getspawn.fail", player.getDisplayName());
+            Component message = Component.translatable("info.drandomspawn.get_spawn.fail", player.getDisplayName());
             source.sendFailure(message);
         }
-        return 1; // Returning 1 is fine as the command itself always executes correctly.
+        return 1;
     }
-    }
+}
