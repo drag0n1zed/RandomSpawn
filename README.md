@@ -28,6 +28,7 @@ The `dRandomSpawn.toml` file, located in your `config` folder, allows for custom
 ## Credits
 
 Original project: [rinko1231/RandomSpawn](https://github.com/rinko1231/RandomSpawn)
+
 Maintained by: [drag0n1zed](https://github.com/drag0n1zed)
 
 ## License
