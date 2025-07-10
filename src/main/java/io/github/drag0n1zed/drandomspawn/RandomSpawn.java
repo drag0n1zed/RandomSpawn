@@ -179,16 +179,13 @@ public class RandomSpawn {
      * Saves the player's new spawn coordinates to their NBT data.
      */
     public static void savePlayerSpawn(ServerPlayer player, BlockPos pos) {
-        CompoundTag playerData = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-        playerData.putInt(NBT_KEY_SPAWN_X, pos.getX());
-        playerData.putInt(NBT_KEY_SPAWN_Y, pos.getY());
-        playerData.putInt(NBT_KEY_SPAWN_Z, pos.getZ());
-        player.sendSystemMessage(Component.translatable("debug.drandomspawn.save_player_spawn",
-                playerData.getInt(NBT_KEY_SPAWN_X),
-                playerData.getInt(NBT_KEY_SPAWN_Y),
-                playerData.getInt(NBT_KEY_SPAWN_Z)
-                )
-        );
+        CompoundTag playerData = player.getPersistentData();
+        CompoundTag data = playerData.contains(Player.PERSISTED_NBT_TAG) ?
+                playerData.getCompound(Player.PERSISTED_NBT_TAG) : new CompoundTag();
+        data.putInt(NBT_KEY_SPAWN_X, pos.getX());
+        data.putInt(NBT_KEY_SPAWN_Y, pos.getY());
+        data.putInt(NBT_KEY_SPAWN_Z, pos.getZ());
+        playerData.put(Player.PERSISTED_NBT_TAG, data);
     }
 
     // --- Private Helper Methods ---
