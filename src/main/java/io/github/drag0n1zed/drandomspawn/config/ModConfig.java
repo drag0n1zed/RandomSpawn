@@ -54,7 +54,7 @@ public class ModConfig
 
         useSpectatorLock = CONFIG_BUILDER
                 .comment(
-                        "If true, puts a player into spectator mode on first join while finding a safe spawn.",
+                        "If true, puts a player into spectator mode and applies a darkness effect while finding a safe spawn.",
                         "This prevents them from moving and hides world loading, providing a smoother experience."
                 )
                 .define("useSpectatorLock", true);

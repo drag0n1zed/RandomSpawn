@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -20,6 +21,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 
 import java.util.Queue;
 import java.util.Random;
@@ -123,12 +126,19 @@ public class RandomSpawn {
             mainThreadExecutionQueue.add(() -> {
                 if (player.connection != null) {
                     player.setGameMode(GameType.SPECTATOR);
+                    // Add temporary darkness effect during spectator lock
+                    player.addEffect(new MobEffectInstance(
+                        MobEffects.DARKNESS, 1000000, 0, 
+                        false, false, false
+                    ));
                 }
             });
         }
 
         Consumer<BlockPos> wrappedOnSuccess = (foundPos) -> {
             if (ModConfig.useSpectatorLock.get() && player.connection != null) {
+                // Remove darkness effect when restoring original gamemode
+                player.removeEffect(MobEffects.DARKNESS);
                 player.setGameMode(originalGamemode);
             }
             onSuccess.accept(foundPos);
@@ -136,6 +146,8 @@ public class RandomSpawn {
 
         Runnable wrappedOnFail = () -> {
             if (ModConfig.useSpectatorLock.get() && player.connection != null) {
+                // Remove darkness effect when restoring original gamemode
+                player.removeEffect(MobEffects.DARKNESS);
                 player.setGameMode(originalGamemode);
             }
             onFail.run();
