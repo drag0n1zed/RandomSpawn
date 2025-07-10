@@ -3,8 +3,10 @@
   "info.drandomspawn.join.fail": "[dRandomSpawn] 未能找到一个安全的随机传送地点。",
   "info.drandomspawn.death.success": "[dRandomSpawn] 正在您的专属随机出生点重生。",
 
-  "info.drandomspawn.get_spawn.success": "[dRandomSpawn] %s 保存的出生点位于：X: %s, Y: %s, Z: %s",
+  "info.drandomspawn.get_spawn.success": "[dRandomSpawn] %s 保存的出生点位于: %s, %s, %s",
   "info.drandomspawn.get_spawn.fail": "[dRandomSpawn] %s 没有保存的随机出生点。",
+
+  "info.drandomspawn.set_spawn.success": "[dRandomSpawn] %s'的出生点成功保存于: %s, %s, %s.",
 
   "info.drandomspawn.random_teleport.start": "[dRandomSpawn] 正在寻找一个安全的随机地点...",
   "info.drandomspawn.random_teleport.success": "[dRandomSpawn] 已传送至一个新的随机地点！新地点已保存。",

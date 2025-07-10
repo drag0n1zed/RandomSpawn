@@ -21,7 +21,6 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 
 import java.util.Queue;
@@ -42,7 +41,7 @@ public class RandomSpawn {
 
     // Enum to distinguish spawn reasons for message customization and logic branching.
     private enum SpawnReason {
-        JOIN,
+        FIRST_JOIN,
         RESPAWN_NEW_SPAWN,
         RESPAWN_EXISTING_SPAWN
     }
@@ -82,7 +81,7 @@ public class RandomSpawn {
 
         // Only runs if the player has no saved spawn point from this mod.
         if (!playerPersistedData.contains(NBT_KEY_SPAWN_X)) {
-            initiatePlayerSpawn(player, SpawnReason.JOIN);
+            initiatePlayerSpawn(player, SpawnReason.FIRST_JOIN);
         }
     }
 
@@ -112,32 +111,28 @@ public class RandomSpawn {
      * Asynchronously finds a safe random location and executes a callback with the result.
      * The search is performed on a separate thread to avoid freezing the server.
      * The success/fail actions are run safely on the main server thread.
-     * This method also handles changing the player's gamemode to spectator and back
+     * This method also handles changing the player's gamemode to spectator,
+     * gives the player a darkness effect, and eventually revert back
      * if ModConfig.useSpectatorLock is enabled.
      *
-     * @param player The player to teleport.
+     * @param player    The player to teleport.
      * @param onSuccess A Consumer to run on success, accepting the found BlockPos.
-     * @param onFail A Runnable to run on failure.
+     * @param onFail    A Runnable to run on failure.
      */
     public static void findSafeSpawnAndTeleportAsync(ServerPlayer player, Consumer<BlockPos> onSuccess, Runnable onFail) {
         final GameType originalGamemode = player.gameMode.getGameModeForPlayer();
 
         if (ModConfig.useSpectatorLock.get()) {
             mainThreadExecutionQueue.add(() -> {
-                if (player.connection != null) {
-                    player.setGameMode(GameType.SPECTATOR);
-                    // Add temporary darkness effect during spectator lock
-                    player.addEffect(new MobEffectInstance(
-                        MobEffects.DARKNESS, 1000000, 0, 
-                        false, false, false
-                    ));
-                }
+                player.setGameMode(GameType.SPECTATOR);
+                player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 1000000, 0,
+                        false, false, false)
+                );
             });
         }
 
         Consumer<BlockPos> wrappedOnSuccess = (foundPos) -> {
-            if (ModConfig.useSpectatorLock.get() && player.connection != null) {
-                // Remove darkness effect when restoring original gamemode
+            if (ModConfig.useSpectatorLock.get()) {
                 player.removeEffect(MobEffects.DARKNESS);
                 player.setGameMode(originalGamemode);
             }
@@ -145,8 +140,7 @@ public class RandomSpawn {
         };
 
         Runnable wrappedOnFail = () -> {
-            if (ModConfig.useSpectatorLock.get() && player.connection != null) {
-                // Remove darkness effect when restoring original gamemode
+            if (ModConfig.useSpectatorLock.get()) {
                 player.removeEffect(MobEffects.DARKNESS);
                 player.setGameMode(originalGamemode);
             }
@@ -181,12 +175,20 @@ public class RandomSpawn {
         }).start();
     }
 
-    /** Saves the player's new spawn coordinates to their NBT data. */
+    /**
+     * Saves the player's new spawn coordinates to their NBT data.
+     */
     public static void savePlayerSpawn(ServerPlayer player, BlockPos pos) {
-        CompoundTag playerData = player.getPersistentData();
+        CompoundTag playerData = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         playerData.putInt(NBT_KEY_SPAWN_X, pos.getX());
         playerData.putInt(NBT_KEY_SPAWN_Y, pos.getY());
         playerData.putInt(NBT_KEY_SPAWN_Z, pos.getZ());
+        player.sendSystemMessage(Component.translatable("debug.drandomspawn.save_player_spawn",
+                playerData.getInt(NBT_KEY_SPAWN_X),
+                playerData.getInt(NBT_KEY_SPAWN_Y),
+                playerData.getInt(NBT_KEY_SPAWN_Z)
+                )
+        );
     }
 
     // --- Private Helper Methods ---
@@ -196,28 +198,26 @@ public class RandomSpawn {
      * This method decides whether to use an existing custom spawn or search for a new one.
      *
      * @param player The ServerPlayer.
-     * @param reason The reason for triggering this spawn logic (JOIN, RESPAWN_NEW_SPAWN, RESPAWN_EXISTING_SPAWN).
+     * @param reason The reason for triggering this spawn logic (FIRST_JOIN, RESPAWN_NEW_SPAWN, RESPAWN_EXISTING_SPAWN).
      */
     private void initiatePlayerSpawn(ServerPlayer player, SpawnReason reason) {
         CompoundTag playerPersistedData = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-        boolean hasModSpawn = playerPersistedData.contains(NBT_KEY_SPAWN_X);
 
-        if (reason == SpawnReason.RESPAWN_EXISTING_SPAWN && hasModSpawn) {
+        if (reason == SpawnReason.RESPAWN_EXISTING_SPAWN) {
             double x = playerPersistedData.getInt(NBT_KEY_SPAWN_X) + 0.5;
             double y = playerPersistedData.getInt(NBT_KEY_SPAWN_Y);
             double z = playerPersistedData.getInt(NBT_KEY_SPAWN_Z) + 0.5;
             player.teleportTo(x, y, z);
             player.sendSystemMessage(Component.translatable("info.drandomspawn.death.success"));
-        } else if (!hasModSpawn) {
+        } else {
             player.sendSystemMessage(Component.translatable("info.drandomspawn.random_teleport.start"));
 
             Consumer<BlockPos> onSuccess = (foundPos) -> {
-                if (player.connection == null) return;
                 player.teleportTo(foundPos.getX() + 0.5, foundPos.getY(), foundPos.getZ() + 0.5);
                 savePlayerSpawn(player, foundPos);
 
                 Component successMessage;
-                if (reason == SpawnReason.JOIN) {
+                if (reason == SpawnReason.FIRST_JOIN) {
                     successMessage = Component.translatable("info.drandomspawn.join.success");
                 } else {
                     successMessage = Component.translatable("info.drandomspawn.random_teleport.success");
@@ -226,10 +226,9 @@ public class RandomSpawn {
             };
 
             Runnable onFail = () -> {
-                if (player.connection == null) return;
 
                 Component failMessage;
-                if (reason == SpawnReason.JOIN) {
+                if (reason == SpawnReason.FIRST_JOIN) {
                     failMessage = Component.translatable("info.drandomspawn.join.fail");
                 } else {
                     failMessage = Component.translatable("info.drandomspawn.random_teleport.fail");
@@ -268,14 +267,18 @@ public class RandomSpawn {
         return null;
     }
 
-    /** Checks if a biome is blacklisted. */
+    /**
+     * Checks if a biome is blacklisted.
+     */
     private static boolean isBiomeBlacklisted(Level world, BlockPos pos, String biomeId) {
         return world.getBiome(pos).is(BiomeTags.IS_OCEAN)
                 || world.getBiome(pos).is(BiomeTags.IS_RIVER)
                 || ModConfig.biomeBlacklist.get().contains(biomeId);
     }
 
-    /** Checks if a block is blacklisted. */
+    /**
+     * Checks if a block is blacklisted.
+     */
     private static boolean isBlockBlacklisted(String blockId) {
         return ModConfig.blockBlacklist.get().contains(blockId);
     }
