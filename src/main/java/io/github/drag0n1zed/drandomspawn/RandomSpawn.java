@@ -1,40 +1,45 @@
 package io.github.drag0n1zed.drandomspawn;
 
+import com.mojang.logging.LogUtils;
 import io.github.drag0n1zed.drandomspawn.command.ModCommands;
-import io.github.drag0n1zed.drandomspawn.config.ModConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.world.effect.MobEffects;
+import org.slf4j.Logger;
 
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
-@Mod("drandomspawn")
+@Mod(RandomSpawn.MODID)
+@Mod.EventBusSubscriber(modid = RandomSpawn.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class RandomSpawn {
 
+    // MODID + LOGGER
+    public static final String MODID = "drandomspawn";
+    public static final Logger LOGGER = LogUtils.getLogger();
+
     // NBT Keys for storing player spawn coordinates
-    public static final String NBT_KEY_SPAWN_X = "drandomspawn:spawn_x";
-    public static final String NBT_KEY_SPAWN_Y = "drandomspawn:spawn_y";
-    public static final String NBT_KEY_SPAWN_Z = "drandomspawn:spawn_z";
+    public static final String NBT_KEY_SPAWN_X = MODID + ":spawn_x";
+    public static final String NBT_KEY_SPAWN_Y = MODID + ":spawn_y";
+    public static final String NBT_KEY_SPAWN_Z = MODID + ":spawn_z";
 
     // A thread-safe queue to hold tasks that need to be run on the main server thread.
     private static final Queue<Runnable> mainThreadExecutionQueue = new ConcurrentLinkedQueue<>();
@@ -47,23 +52,43 @@ public class RandomSpawn {
     }
 
     public RandomSpawn() {
-        ModConfig.register();
-        MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
-        MinecraftForge.EVENT_BUS.addListener(this::onServerTick);
+        RandomSpawnConfig.register();
     }
 
     // --- Event Handlers ---
-
-    public void registerCommands(RegisterCommandsEvent event) {
+    @SubscribeEvent
+    public static void registerCommands(RegisterCommandsEvent event) {
         ModCommands.register(event.getDispatcher());
+    }
+
+    // Checks config validity
+    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ModEvents {
+        @SubscribeEvent
+        public static void onConfigLoad(final ModConfigEvent.Loading event) {
+            final var config = event.getConfig();
+            if (config.getSpec() == RandomSpawnConfig.CONFIG_SPEC) {
+                LOGGER.info("Validating dRandomSpawn config");
+                int min = RandomSpawnConfig.minDistance.get();
+                int max = RandomSpawnConfig.maxDistance.get();
+                if (min > max) {
+                    String errorMessage = String.format(
+                            "[dRandomSpawn] 'minDistance' (%d) cannot be greater than 'maxDistance' (%d). " +
+                                    "The server cannot start until this is corrected in the dRandomSpawn.toml config file.",
+                            min, max
+                    );
+                    throw new IllegalStateException(errorMessage);
+                }
+            }
+        }
     }
 
     /**
      * Executes tasks from other threads on the main server thread at the end of each tick.
      * This prevents concurrent modification issues with Minecraft's game state.
      */
-    public void onServerTick(TickEvent.ServerTickEvent event) {
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             while (!mainThreadExecutionQueue.isEmpty()) {
                 mainThreadExecutionQueue.poll().run();
@@ -72,7 +97,7 @@ public class RandomSpawn {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
@@ -86,7 +111,7 @@ public class RandomSpawn {
     }
 
     @SubscribeEvent
-    public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
@@ -122,7 +147,7 @@ public class RandomSpawn {
     public static void findSafeSpawnAndTeleportAsync(ServerPlayer player, Consumer<BlockPos> onSuccess, Runnable onFail) {
         final GameType originalGamemode = player.gameMode.getGameModeForPlayer();
 
-        if (ModConfig.useSpectatorLock.get()) {
+        if (RandomSpawnConfig.useSpectatorLock.get()) {
             mainThreadExecutionQueue.add(() -> {
                 player.setGameMode(GameType.SPECTATOR);
                 player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 1000000, 0,
@@ -132,7 +157,7 @@ public class RandomSpawn {
         }
 
         Consumer<BlockPos> wrappedOnSuccess = (foundPos) -> {
-            if (ModConfig.useSpectatorLock.get()) {
+            if (RandomSpawnConfig.useSpectatorLock.get()) {
                 player.removeEffect(MobEffects.DARKNESS);
                 player.setGameMode(originalGamemode);
             }
@@ -140,7 +165,7 @@ public class RandomSpawn {
         };
 
         Runnable wrappedOnFail = () -> {
-            if (ModConfig.useSpectatorLock.get()) {
+            if (RandomSpawnConfig.useSpectatorLock.get()) {
                 player.removeEffect(MobEffects.DARKNESS);
                 player.setGameMode(originalGamemode);
             }
@@ -149,21 +174,39 @@ public class RandomSpawn {
 
 
         new Thread(() -> {
-            int searchRange = ModConfig.maxDistance.get();
-            int maxAttempts = ModConfig.maxTries.get();
+            int minDistance = RandomSpawnConfig.minDistance.get();
+            int maxDistance = RandomSpawnConfig.maxDistance.get();
+            int maxAttempts = RandomSpawnConfig.maxTries.get();
+
             Level world = player.level();
-            BlockPos centerPos = player.getRespawnPosition() != null ? player.getRespawnPosition() : world.getSharedSpawnPos();
+            BlockPos centerPos = world.getSharedSpawnPos();
             Random random = new Random();
             BlockPos foundPos = null;
 
             for (int attempt = 0; attempt < maxAttempts; attempt++) {
-                int x = centerPos.getX() + random.nextInt(searchRange * 2) - searchRange;
-                int z = centerPos.getZ() + random.nextInt(searchRange * 2) - searchRange;
-                BlockPos teleportPos = findSafeSpawnLocation(world, x, z);
+                int dx;
+                int dz;
+
+                // Loop: Finds a GEOMETRICALLY valid point in the "donut".
+                do {
+                    // Generate a random offset within the outer square.
+                    dx = random.nextInt(-maxDistance, maxDistance + 1);
+                    dz = random.nextInt(-maxDistance, maxDistance + 1);
+
+                    // If the point is outside the inner "forbidden" square, it's a valid candidate.
+                    // If either axis is outside the minDistance, the point cannot be in the central forbidden square.
+                    // Otherwise, the point was too close to the center; the while loop runs again.
+                } while (Math.abs(dx) < minDistance && Math.abs(dz) < minDistance);
+
+                // See if it's safe in the world
+                BlockPos finalCoords = centerPos.offset(dx, 0, dz);
+                BlockPos teleportPos = findSafeSpawnLocation(world, finalCoords.getX(), finalCoords.getZ());
+
                 if (teleportPos != null) {
                     foundPos = teleportPos;
-                    break;
+                    break; // Success
                 }
+                // If failure, reset outer loop
             }
 
             final BlockPos finalPos = foundPos;
@@ -197,7 +240,7 @@ public class RandomSpawn {
      * @param player The ServerPlayer.
      * @param reason The reason for triggering this spawn logic (FIRST_JOIN, RESPAWN_NEW_SPAWN, RESPAWN_EXISTING_SPAWN).
      */
-    private void initiatePlayerSpawn(ServerPlayer player, SpawnReason reason) {
+    private static void initiatePlayerSpawn(ServerPlayer player, SpawnReason reason) {
         CompoundTag playerPersistedData = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
 
         if (reason == SpawnReason.RESPAWN_EXISTING_SPAWN) {
@@ -248,7 +291,7 @@ public class RandomSpawn {
 
         boolean isWithinWorldBorder = world.getWorldBorder().isWithinBounds(groundPos);
         boolean isAboveGroundLevel = playerFeetPos.getY() > 63;
-        boolean isBiomeAllowed = !isBiomeBlacklisted(world, groundPos, biomeId);
+        boolean isBiomeAllowed = !isBiomeBlacklisted(biomeId);
 
         if (isWithinWorldBorder && isAboveGroundLevel && isBiomeAllowed) {
             Block groundBlock = world.getBlockState(groundPos).getBlock();
@@ -264,19 +307,11 @@ public class RandomSpawn {
         return null;
     }
 
-    /**
-     * Checks if a biome is blacklisted.
-     */
-    private static boolean isBiomeBlacklisted(Level world, BlockPos pos, String biomeId) {
-        return world.getBiome(pos).is(BiomeTags.IS_OCEAN)
-                || world.getBiome(pos).is(BiomeTags.IS_RIVER)
-                || ModConfig.biomeBlacklist.get().contains(biomeId);
+    private static boolean isBiomeBlacklisted(String biomeId) {
+        return RandomSpawnConfig.biomeBlacklist.get().contains(biomeId);
     }
 
-    /**
-     * Checks if a block is blacklisted.
-     */
     private static boolean isBlockBlacklisted(String blockId) {
-        return ModConfig.blockBlacklist.get().contains(blockId);
+        return RandomSpawnConfig.blockBlacklist.get().contains(blockId);
     }
 }
