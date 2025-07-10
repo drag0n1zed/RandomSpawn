@@ -63,22 +63,25 @@ public class RandomSpawn {
 
     // Checks config validity
     @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class ModEvents {
+    public static class ModEventBusEvents {
         @SubscribeEvent
         public static void onConfigLoad(final ModConfigEvent.Loading event) {
-            final var config = event.getConfig();
-            if (config.getSpec() == RandomSpawnConfig.CONFIG_SPEC) {
-                LOGGER.info("Validating dRandomSpawn config");
+            if (event.getConfig().getSpec() == RandomSpawnConfig.CONFIG_SPEC) {
+                LOGGER.info("Loading and validating dRandomSpawn config...");
+
                 int min = RandomSpawnConfig.minDistance.get();
                 int max = RandomSpawnConfig.maxDistance.get();
+
                 if (min > max) {
+                    // This method's only job is to throw an error if invalid.
                     String errorMessage = String.format(
-                            "[dRandomSpawn] 'minDistance' (%d) cannot be greater than 'maxDistance' (%d). " +
-                                    "The server cannot start until this is corrected in the dRandomSpawn.toml config file.",
+                            "[dRandomSpawn] CRITICAL CONFIG ERROR: 'minDistance' (%d) cannot be greater than 'maxDistance' (%d).",
                             min, max
                     );
                     throw new IllegalStateException(errorMessage);
                 }
+
+                LOGGER.info("dRandomSpawn config loaded successfully.");
             }
         }
     }
